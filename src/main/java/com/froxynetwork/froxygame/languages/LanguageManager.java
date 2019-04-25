@@ -3,6 +3,10 @@ package com.froxynetwork.froxygame.languages;
 import java.io.File;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * MIT License
@@ -35,6 +39,8 @@ import java.util.Map;
  */
 public class LanguageManager {
 
+	private static final Logger LOG = LoggerFactory.getLogger(LanguageManager.class);
+
 	/**
 	 * Default language, set to English
 	 */
@@ -49,10 +55,11 @@ public class LanguageManager {
 	}
 
 	static {
+		LOG.info("Initializing LanguageManager. Default language = {}", DEFAULT);
 		languages = new EnumMap<>(Languages.class);
 		for (Languages l : Languages.values())
-			languages.put(l, new Language.Impl(l));
-		//		register(new File(pathname));
+			languages.put(l, new Language.LanguageImpl(l));
+		LOG.info("LanguageManager initialized, {} languages imported !", Languages.values().length);
 	}
 
 	/**
@@ -64,7 +71,25 @@ public class LanguageManager {
 	 * @param path The directory
 	 */
 	public static void register(File path) {
-
+		LOG.info("Registering directory {}", path.getPath());
+		if (!path.exists() || !path.isDirectory()) {
+			LOG.error("File {} doesn't exist or is not a directory !", path.getPath());
+			// We don't throw a new Exception
+			return;
+		}
+		int nbrFiles = 0;
+		for (Entry<Languages, Language> langs : languages.entrySet()) {
+			String fileName = langs.getKey().getLang() + ".lang";
+			File f = new File(path, fileName);
+			if (!f.exists() || !f.isFile()) {
+				LOG.warn("File {} not found, or is not a file !", fileName);
+				continue;
+			}
+			LOG.info("Parsing file {}", fileName);
+			langs.getValue().register(f);
+			nbrFiles++;
+		}
+		LOG.info("Directory {} registered, {} files imported", path.getPath(), nbrFiles);
 	}
 
 	/**
@@ -79,8 +104,9 @@ public class LanguageManager {
 	}
 
 	/**
-	 * Get the default translate of specific id.<br />
+	 * Get the default translate of specific message id.<br />
 	 * Same as <code>get(id, DEFAULT, params)</code>
+	 * 
 	 * @param id The id of the message
 	 * @param params The parameters
 	 * @return The message translated by default language, or the id if message id doesn't exist
@@ -90,13 +116,32 @@ public class LanguageManager {
 	}
 
 	/**
+	 * Get the translation of specific message id with specific language. If message id not found, return the translation with DEFAULT language.<br />
+	 * 
+	 * @param id The id of the message
+	 * @param lang The specific language
+	 * @param params The parameters
+	 * @return The message translated by specific language, or the message translated by default language, or the id if message id doesn't exist
+	 */
+	public static String $(String id, Languages lang, String... params) {
+		String msg = $_(id, lang, params);
+		// If message is not found in specific language, we'll return the message in DEFAULT language.
+		if (msg.equals(id) && lang != DEFAULT) {
+			LOG.warn("Message {} not found, trying to get message in DEFAULT language", id);
+			msg = $_(id, DEFAULT, params);
+		}
+		return msg;
+	}
+
+	/**
 	 * Get the translate of specific id with specific language.<br />
+	 * 
 	 * @param id The id of the message
 	 * @param lang The specific language
 	 * @param params The parameters
 	 * @return The message translated by specific language, or the id if message id doesn't exist
 	 */
-	public static String $(String id, Languages lang, String... params) {
+	public static String $_(String id, Languages lang, String... params) {
 		Language l = getLanguage(lang);
 		if (l == null) {
 			// Impossible

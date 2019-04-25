@@ -1,6 +1,14 @@
 package com.froxynetwork.froxygame.languages;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -49,15 +57,25 @@ public interface Language {
 	 */
 	public String get(String id, String... params);
 
+	/**
+	 * Register messages in specific file
+	 * 
+	 * @param file Specific file with messages inside
+	 */
+	public void register(File file);
+
 	@AllArgsConstructor
 	@Getter
-	public class Impl implements Language {
+	public class LanguageImpl implements Language {
+
+		private final Logger LOG = LoggerFactory.getLogger(getClass());
 
 		private Languages language;
 
 		private HashMap<String, String> translates;
 
-		public Impl() {
+		public LanguageImpl(Languages language) {
+			this.language = language;
 			this.translates = new HashMap<>();
 		}
 
@@ -66,10 +84,50 @@ public interface Language {
 			String msg = translates.get(id);
 			if (msg == null)
 				return id;
-			for (String str : params) {
-				msg = msg.replaceFirst("{}", str);
-			}
+			for (String str : params)
+				msg = msg.replaceFirst("\\{\\}", str);
 			return msg;
+		}
+
+		@Override
+		public void register(File file) {
+			LOG.info("Initializing file {}", file.getName());
+			try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+				String line;
+				int lines = 0;
+				int success = 0;
+				int empty = 0;
+				int error = 0;
+				while ((line = br.readLine()) != null) {
+					LOG.debug("Reading line {}", line);
+					lines++;
+					if ("".equalsIgnoreCase(line.trim())) {
+						LOG.warn("Line {} is empty !", lines);
+						empty++;
+						continue;
+					}
+					String[] strs = line.split(" : ");
+					if (strs.length != 2) {
+						LOG.warn("Error while parsing line {}, found {}", lines, line);
+						error++;
+						continue;
+					}
+					String oldValue = translates.put(strs[0], strs[1]);
+					if (oldValue != null)
+						LOG.warn("Warning : key {} is aleady registered as value = {}", strs[0], oldValue);
+					success++;
+				}
+				LOG.info("Reading {} lines, {} successfully imported, {} empty and {} errors", lines, success, empty, error);
+			} catch (FileNotFoundException ex) {
+				LOG.error("File {} not found", file.getName());
+				LOG.error("", ex);
+				return;
+			} catch (IOException ex) {
+				LOG.error("IOException with file {}", file.getName());
+				LOG.error("", ex);
+				return;
+			}
+			LOG.info("File {} initialized !", file.getName());
 		}
 	}
 }

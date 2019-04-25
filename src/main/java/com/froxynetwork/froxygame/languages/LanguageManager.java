@@ -127,8 +127,10 @@ public class LanguageManager {
 		String msg = $_(id, lang, params);
 		// If message is not found in specific language, we'll return the message in DEFAULT language.
 		if (msg.equals(id) && lang != DEFAULT) {
-			LOG.warn("Message {} not found, trying to get message in DEFAULT language", id);
+			LOG.warn("Message {} not found in language {}, trying to get message in DEFAULT language", id, lang);
 			msg = $_(id, DEFAULT, params);
+			if (msg.equals(id))
+				LOG.warn("Message {} not found in DEFAULT language", id);
 		}
 		return msg;
 	}

@@ -105,7 +105,7 @@ public class LanguageManager {
 
 	/**
 	 * Get the default translate of specific message id.<br />
-	 * Same as <code>get(id, DEFAULT, params)</code>
+	 * Same as <code>$(id, DEFAULT, params)</code>
 	 * 
 	 * @param id The id of the message
 	 * @param params The parameters

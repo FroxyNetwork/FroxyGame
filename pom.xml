@@ -87,7 +87,7 @@
 		<dependency>
 			<groupId>com.github.froxynetwork</groupId>
 			<artifactId>froxynetwork</artifactId>
-			<version>0.1.3</version>
+			<version>feature~websocket-3492474dd2-1</version>
 		</dependency>
 	</dependencies>
 </project>

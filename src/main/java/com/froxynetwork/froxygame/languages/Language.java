@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public interface Language {
 	/**
 	 * Return specific language associated to specific id with parameters
 	 * 
-	 * @param id The id of the message
+	 * @param id     The id of the message
 	 * @param params The parameters. Can be empty
 	 * @return Specific message if found, or the id
 	 */
@@ -89,6 +90,8 @@ public interface Language {
 			return msg;
 		}
 
+		private Pattern pattern = Pattern.compile(" : ");
+
 		@Override
 		public void register(File file) {
 			LOG.info("Initializing file {}", file.getName());
@@ -106,7 +109,7 @@ public interface Language {
 						empty++;
 						continue;
 					}
-					String[] strs = line.split(" : ");
+					String[] strs = pattern.split(line);
 					if (strs.length != 2) {
 						LOG.warn("Error while parsing line {}, found {}", lines, line);
 						error++;
@@ -117,7 +120,8 @@ public interface Language {
 						LOG.warn("Warning : key {} is aleady registered as value = {}", strs[0], oldValue);
 					success++;
 				}
-				LOG.info("Reading {} lines, {} successfully imported, {} empty and {} errors", lines, success, empty, error);
+				LOG.info("Reading {} lines, {} successfully imported, {} empty and {} errors", lines, success, empty,
+						error);
 			} catch (FileNotFoundException ex) {
 				LOG.error("File {} not found", file.getName());
 				LOG.error("", ex);

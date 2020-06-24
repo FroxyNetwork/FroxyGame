@@ -1,9 +1,16 @@
 package com.froxynetwork.froxygame;
 
+import static org.junit.Assert.assertEquals;
+
+import org.junit.Test;
+
+import com.froxynetwork.froxygame.languages.LanguageManager;
+import com.froxynetwork.froxygame.languages.Languages;
+
 /**
  * MIT License
  *
- * Copyright (c) 2019 FroxyNetwork
+ * Copyright (c) 2020 FroxyNetwork
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,5 +32,14 @@ package com.froxynetwork.froxygame;
  * 
  * @author 0ddlyoko
  */
-public class FroxyGame {
+public class LanguagesTest {
+
+	@Test
+	public void testFromLang() {
+		// Existing languages
+		assertEquals(Languages.FRENCH, Languages.fromLang("fr_FR"));
+		assertEquals(Languages.ENGLISH, Languages.fromLang("en_US"));
+		// Default language
+		assertEquals(LanguageManager.DEFAULT, Languages.fromLang("unknown"));
+	}
 }

@@ -31,8 +31,8 @@ import lombok.Getter;
  * List of all languages managed by the app.
  */
 public enum Languages {
-	FRENCH("fr_FR"),
-	ENGLISH("en_US");
+	FRENCH("fr_FR"), // French
+	ENGLISH("en_US"); // English
 
 	@Getter
 	private String lang;
@@ -41,6 +41,13 @@ public enum Languages {
 		this.lang = lang;
 	}
 
+	/**
+	 * Convert the string to specific language
+	 * 
+	 * @param lang The language to convert
+	 * @return The converted language if language found or default language
+	 * @see {@link LanguageManager#DEFAULT}
+	 */
 	public static Languages fromLang(String lang) {
 		for (Languages l : values())
 			if (l.lang.equalsIgnoreCase(lang))

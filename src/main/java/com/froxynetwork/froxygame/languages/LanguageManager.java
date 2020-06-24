@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import lombok.Getter;
+
 /**
  * MIT License
  *
@@ -35,7 +37,8 @@ import org.slf4j.LoggerFactory;
  */
 /**
  * Language Manager<br />
- * This interface is used to manage languages, to get and register translates, etc
+ * This interface is used to manage languages, to get and register translates,
+ * etc
  */
 public class LanguageManager {
 
@@ -46,6 +49,7 @@ public class LanguageManager {
 	 */
 	public static final Languages DEFAULT = Languages.ENGLISH;
 
+	@Getter
 	private static Map<Languages, Language> languages;
 
 	/**
@@ -69,13 +73,15 @@ public class LanguageManager {
 	 * Example: <code>fr_FR.lang or en_US.lang</code>
 	 * 
 	 * @param path The directory
+	 * 
+	 * @return The number of files correctly parsed
 	 */
-	public static void register(File path) {
+	public static int register(File path) {
 		LOG.info("Registering directory {}", path.getPath());
 		if (!path.exists() || !path.isDirectory()) {
 			LOG.error("File {} doesn't exist or is not a directory !", path.getPath());
 			// We don't throw a new Exception
-			return;
+			return 0;
 		}
 		int nbrFiles = 0;
 		for (Entry<Languages, Language> langs : languages.entrySet()) {
@@ -90,6 +96,7 @@ public class LanguageManager {
 			nbrFiles++;
 		}
 		LOG.info("Directory {} registered, {} files imported", path.getPath(), nbrFiles);
+		return nbrFiles;
 	}
 
 	/**
@@ -107,25 +114,29 @@ public class LanguageManager {
 	 * Get the default translate of specific message id.<br />
 	 * Same as <code>$(id, DEFAULT, params)</code>
 	 * 
-	 * @param id The id of the message
+	 * @param id     The id of the message
 	 * @param params The parameters
-	 * @return The message translated by default language, or the id if message id doesn't exist
+	 * @return The message translated by default language, or the id if message id
+	 *         doesn't exist
 	 */
 	public static String $(String id, String... params) {
 		return $(id, DEFAULT, params);
 	}
 
 	/**
-	 * Get the translation of specific message id with specific language. If message id not found, return the translation with DEFAULT language.<br />
+	 * Get the translation of specific message id with specific language. If message
+	 * id not found, return the translation with DEFAULT language.<br />
 	 * 
-	 * @param id The id of the message
-	 * @param lang The specific language
+	 * @param id     The id of the message
+	 * @param lang   The specific language
 	 * @param params The parameters
-	 * @return The message translated by specific language, or the message translated by default language, or the id if message id doesn't exist
+	 * @return The message translated by specific language, or the message
+	 *         translated by default language, or the id if message id doesn't exist
 	 */
 	public static String $(String id, Languages lang, String... params) {
 		String msg = $_(id, lang, params);
-		// If message is not found in specific language, we'll return the message in DEFAULT language.
+		// If message is not found in specific language, we'll return the message in
+		// DEFAULT language.
 		if (msg.equals(id) && lang != DEFAULT) {
 			LOG.warn("Message {} not found in language {}, trying to get message in DEFAULT language", id, lang);
 			msg = $_(id, DEFAULT, params);
@@ -138,10 +149,11 @@ public class LanguageManager {
 	/**
 	 * Get the translate of specific id with specific language.<br />
 	 * 
-	 * @param id The id of the message
-	 * @param lang The specific language
+	 * @param id     The id of the message
+	 * @param lang   The specific language
 	 * @param params The parameters
-	 * @return The message translated by specific language, or the id if message id doesn't exist
+	 * @return The message translated by specific language, or the id if message id
+	 *         doesn't exist
 	 */
 	public static String $_(String id, Languages lang, String... params) {
 		Language l = getLanguage(lang);

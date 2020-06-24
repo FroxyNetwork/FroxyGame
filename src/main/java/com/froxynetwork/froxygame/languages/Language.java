@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +67,6 @@ public interface Language {
 	@AllArgsConstructor
 	@Getter
 	public class LanguageImpl implements Language {
-
 		private final Logger LOG = LoggerFactory.getLogger(getClass());
 
 		private Languages language;
@@ -90,8 +88,6 @@ public interface Language {
 			return msg;
 		}
 
-		private Pattern pattern = Pattern.compile(" : ");
-
 		@Override
 		public void register(File file) {
 			LOG.info("Initializing file {}", file.getName());
@@ -109,15 +105,16 @@ public interface Language {
 						empty++;
 						continue;
 					}
-					String[] strs = pattern.split(line);
-					if (strs.length != 2) {
+					int id = line.indexOf(':');
+					if (id == -1) {
 						LOG.warn("Error while parsing line {}, found {}", lines, line);
 						error++;
 						continue;
 					}
+					String strs[] = { line.substring(0, id).trim(), line.substring(id + 1).trim() };
 					String oldValue = translates.put(strs[0], strs[1]);
 					if (oldValue != null)
-						LOG.warn("Warning : key {} is aleady registered as value = {}", strs[0], oldValue);
+						LOG.warn("Warning : key {} is already registered as value = {}", strs[0], oldValue);
 					success++;
 				}
 				LOG.info("Reading {} lines, {} successfully imported, {} empty and {} errors", lines, success, empty,
